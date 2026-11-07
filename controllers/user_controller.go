@@ -125,3 +125,32 @@ func LoginUser(context *gin.Context) {
 		},
 	})
 }
+
+func GetCurrentUser(context *gin.Context) {
+	// Ambil userID
+	userId, exists := context.Get("userID")
+	if !exists {
+		context.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Gagal Autentikasi",
+		})
+	}
+
+	var user models.User
+
+	userData := config.DB.Select("id", "name", "email").First(&user, userId).Error
+	if userData != nil {
+		context.JSON(http.StatusNotFound, gin.H{
+			"error": "User Tidak Ditemukan",
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{
+		"user": gin.H{
+			"id":     user.ID,
+			"name":   user.Name,
+			"email":  user.Email,
+			"events": user.Events,
+		},
+	})
+}

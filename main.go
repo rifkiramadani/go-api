@@ -5,6 +5,7 @@ import (
 
 	"example.com/event-app/config"
 	"example.com/event-app/controllers"
+	middleware "example.com/event-app/middlewares"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -30,6 +31,12 @@ func main() {
 
 		api.POST("/auth/register", controllers.RegisterUser)
 		api.POST("/auth/login", controllers.LoginUser)
+
+		protected := api.Group("/")
+		protected.Use(middleware.RequiredAuth())
+		{
+			protected.GET("/auth/me", controllers.GetCurrentUser)
+		}
 	}
 
 	server.Run(":8080")
