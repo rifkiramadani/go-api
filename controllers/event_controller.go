@@ -9,6 +9,8 @@ import (
 )
 
 func CreateEvent(context *gin.Context) {
+	userID, _ := context.Get("userID")
+
 	var event models.Event
 
 	err := context.ShouldBindJSON(&event)
@@ -21,7 +23,7 @@ func CreateEvent(context *gin.Context) {
 	}
 
 	//dummy userID
-	event.UserID = 1
+	event.UserID = uint(userID.(int))
 
 	config.DB.Create(&event)
 	context.JSON(http.StatusCreated, gin.H{
@@ -60,6 +62,8 @@ func GetEventbyId(context *gin.Context) {
 }
 
 func UpdateEvent(context *gin.Context) {
+	userID, _ := context.Get("userID")
+
 	var event models.Event
 	paramsId := context.Param("id")
 
@@ -67,6 +71,13 @@ func UpdateEvent(context *gin.Context) {
 	if eventData != nil {
 		context.JSON(http.StatusNotFound, gin.H{
 			"error": "Event Tidak Ditemukan",
+		})
+		return
+	}
+
+	if event.UserID != uint(userID.(int)) {
+		context.JSON(http.StatusForbidden, gin.H{
+			"error": "Kamu Tidak Bisa Events User Lain",
 		})
 		return
 	}
@@ -88,6 +99,8 @@ func UpdateEvent(context *gin.Context) {
 }
 
 func DeleteEvent(context *gin.Context) {
+	userID, _ := context.Get("userID")
+
 	var event models.Event
 	paramsId := context.Param("id")
 
@@ -95,6 +108,13 @@ func DeleteEvent(context *gin.Context) {
 	if eventData != nil {
 		context.JSON(http.StatusNotFound, gin.H{
 			"error": "Data Event Tidak Ditemukan",
+		})
+		return
+	}
+
+	if event.UserID != uint(userID.(int)) {
+		context.JSON(http.StatusForbidden, gin.H{
+			"error": "Kamu Tidak Bisa Menghapus Event User Lain",
 		})
 		return
 	}
