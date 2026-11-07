@@ -1,14 +1,23 @@
 package main
 
 import (
+	"log"
 	"net/http"
-	"time"
 
+	"example.com/event-app/config"
 	"example.com/event-app/models"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	config.ConnectDB()
+
 	server := gin.Default()
 
 	// Route
@@ -23,7 +32,7 @@ func main() {
 
 // Function Handler
 func getEvents(context *gin.Context) {
-	events := models.GetAllEvents
+	events := models.GetAllEvents()
 
 	context.JSON(http.StatusOK, events)
 }
@@ -40,11 +49,8 @@ func createEvent(context *gin.Context) {
 		return
 	}
 
-	tm := time.Now()
 	// Dummy Data
-	event.Id = 1
 	event.UserId = 1
-	event.DateTime = tm
 
 	// Save Inputan
 	event.Save()
